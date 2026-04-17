@@ -8,9 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="C:\Users\vinobe12\OneDrive - Lärande\Dokument\chattapplikation.cs" Link="chattapplikation.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

@@ -12,6 +12,15 @@ namespace ChattModels
         Private
     }
 
+    // Intermediate message type to demonstrate multi-level inheritance
+    public abstract class TimedMessage : MessageBase
+    {
+        // Optional expiry time for messages
+        public DateTime? ExpiresAt { get; set; }
+
+        protected TimedMessage() { }
+    }
+
     public abstract class MessageBase
     {
         // Unique id for tracking
@@ -76,7 +85,7 @@ namespace ChattModels
         }
     }
 
-    public class TextMessage : MessageBase
+    public class TextMessage : TimedMessage
     {
         public string Content { get; set; } = string.Empty;
 

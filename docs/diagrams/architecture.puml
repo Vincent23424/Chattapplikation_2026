@@ -1,0 +1,21 @@
+@startuml
+' Simple high-level overview of chat application
+package "Client" {
+  class Form1
+}
+package "Server" {
+  class Program
+  class MessageBroadcaster
+}
+package "Models" {
+  class MessageBase
+  class TextMessage
+  class SystemMessage
+  class PrivateMessage
+}
+MessageBase <|-- TextMessage
+MessageBase <|-- SystemMessage
+MessageBase <|-- PrivateMessage
+Program --> MessageBroadcaster
+Form1 --> Models::MessageBase
+@enduml

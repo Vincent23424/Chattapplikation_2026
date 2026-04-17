@@ -1,10 +1,14 @@
 ﻿using System;
+<<<<<<< HEAD
 using System.Text.Json;
 using System.Text.Json.Serialization;
+=======
+>>>>>>> b2d9544781ce0a9a427afccf22c520347a09f68a
 
 namespace ChattModels
 {
     // Grundklassen - Arv startar här
+<<<<<<< HEAD
     public enum MessageType
     {
         Text,
@@ -87,12 +91,19 @@ namespace ChattModels
             var local = Timestamp.ToLocalTime();
             return $"[{local:yyyy-MM-dd HH:mm:ss}] ({Type}) {Sender}:";
         }
+=======
+    public abstract class MessageBase
+    {
+        public string Sender { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+>>>>>>> b2d9544781ce0a9a427afccf22c520347a09f68a
     }
 
     // En underklass för vanliga meddelanden
     public class TextMessage : MessageBase
     {
         public string Content { get; set; }
+<<<<<<< HEAD
 
         public TextMessage()
         {
@@ -114,12 +125,15 @@ namespace ChattModels
         {
             return base.ToString() + $" {Content}";
         }
+=======
+>>>>>>> b2d9544781ce0a9a427afccf22c520347a09f68a
     }
 
     // En underklass för systemhändelser (t.ex. "User joined")
     public class SystemMessage : MessageBase
     {
         public string Action { get; set; }
+<<<<<<< HEAD
 
         public SystemMessage()
         {
@@ -170,5 +184,7 @@ namespace ChattModels
         {
             return base.ToString() + $" (to {Recipient}) {Content}";
         }
+=======
+>>>>>>> b2d9544781ce0a9a427afccf22c520347a09f68a
     }
 }

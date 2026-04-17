@@ -1,7 +1,11 @@
+using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Collections.Generic;
 using ChattModels;
 
 namespace Client
@@ -15,14 +19,14 @@ namespace Client
         private readonly HashSet<Guid> _sentMessageIds = new HashSet<Guid>();
         private readonly object _sentLock = new object();
 
-        // UI controls
-        private TextBox txtServer;
-        private TextBox txtPort;
-        private TextBox txtName;
-        private TextBox txtMessage;
-        private Button btnConnect;
-        private Button btnSend;
-        private ListBox lstChat;
+        // UI controls - initialize with the null-forgiving operator because they are set in BuildUi()
+        private TextBox txtServer = null!;
+        private TextBox txtPort = null!;
+        private TextBox txtName = null!;
+        private TextBox txtMessage = null!;
+        private Button btnConnect = null!;
+        private Button btnSend = null!;
+        private ListBox lstChat = null!;
 
         public Form1()
         {
@@ -224,4 +228,4 @@ namespace Client
             CleanupConnection();
         }
     }
-}
+} // End of Form1.cs

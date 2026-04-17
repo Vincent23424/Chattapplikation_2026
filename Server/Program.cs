@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using ChattModels;
 
 public class Program
@@ -175,8 +174,9 @@ public class Program
     // Maintain client states with persistent writers to avoid disposing streams
     private class ClientState
     {
-        public TcpClient Client { get; init; }
-        public StreamWriter Writer { get; init; }
+        // mark as required because instances are created with object initializers elsewhere
+        public required TcpClient Client { get; init; }
+        public required StreamWriter Writer { get; init; }
         public object WriteLock { get; } = new object();
     }
 }

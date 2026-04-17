@@ -26,7 +26,7 @@ namespace Client
         private TextBox txtMessage = null!;
         private Button btnConnect = null!;
         private Button btnSend = null!;
-        private ListBox lstChat = null!;
+        private TextBox lstChat = null!;
 
         public Form1()
         {
@@ -59,7 +59,7 @@ namespace Client
             topFlow.Controls.Add(txtName);
             topFlow.Controls.Add(btnConnect);
 
-            lstChat = new ListBox { Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0) };
+            lstChat = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0), Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, WordWrap = true };
 
             var bottomPanel = new Panel { Dock = DockStyle.Fill, Height = 100, Padding = new Padding(6) };
             txtMessage = new TextBox { Dock = DockStyle.Fill, Multiline = true, Margin = new Padding(0, 0, 6, 0) };
@@ -67,10 +67,17 @@ namespace Client
             btnSend.Click += BtnSend_Click;
             btnSend.Enabled = false;
 
+            // Enter sends message; Shift+Enter inserts newline
             txtMessage.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Enter)
                 {
+                    // If Shift is held, allow newline insertion
+                    if ((e.Modifiers & Keys.Shift) == Keys.Shift)
+                    {
+                        return;
+                    }
+                    // Otherwise send the message
                     e.SuppressKeyPress = true;
                     BtnSend_Click(btnSend, EventArgs.Empty);
                 }
@@ -108,7 +115,9 @@ namespace Client
                 btnSend.Enabled = true;
 
                 _ = Task.Run(ReceiveLoopAsync);
-                lstChat.Items.Add("Connected to server");
+                lstChat.AppendText("Connected to server" + Environment.NewLine);
+                lstChat.SelectionStart = lstChat.TextLength;
+                lstChat.ScrollToCaret();
             }
             catch (Exception ex)
             {
@@ -146,33 +155,44 @@ namespace Client
 
                         BeginInvoke(() =>
                         {
-                            switch (msg)
-                            {
-                                case TextMessage tm:
-                                    lstChat.Items.Add($"{tm.Timestamp.ToLocalTime():HH:mm} {tm.Sender}: {tm.Content}");
-                                    break;
-                                case PrivateMessage pm:
-                                    lstChat.Items.Add($"{pm.Timestamp.ToLocalTime():HH:mm} {pm.Sender} -> {pm.Recipient}: {pm.Content}");
-                                    break;
-                                case SystemMessage sm:
-                                    lstChat.Items.Add($"{sm.Timestamp.ToLocalTime():HH:mm} [SYSTEM] {sm.Action}");
-                                    break;
-                                default:
-                                    lstChat.Items.Add(msg.ToString());
-                                    break;
-                            }
-                            lstChat.TopIndex = Math.Max(0, lstChat.Items.Count - 1);
+                        switch (msg)
+                        {
+                            case TextMessage tm:
+                                lstChat.AppendText($"{tm.Timestamp.ToLocalTime():HH:mm} {tm.Sender}: {tm.Content}" + Environment.NewLine);
+                                break;
+                            case PrivateMessage pm:
+                                lstChat.AppendText($"{pm.Timestamp.ToLocalTime():HH:mm} {pm.Sender} -> {pm.Recipient}: {pm.Content}" + Environment.NewLine);
+                                break;
+                            case SystemMessage sm:
+                                lstChat.AppendText($"{sm.Timestamp.ToLocalTime():HH:mm} [SYSTEM] {sm.Action}" + Environment.NewLine);
+                                break;
+                            default:
+                                lstChat.AppendText(msg.ToString() + Environment.NewLine);
+                                break;
+                        }
+                        lstChat.SelectionStart = lstChat.TextLength;
+                        lstChat.ScrollToCaret();
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                BeginInvoke(() => lstChat.Items.Add($"Receive error: {ex.Message}"));
+                BeginInvoke(() =>
+                {
+                    lstChat.AppendText($"Receive error: {ex.Message}" + Environment.NewLine);
+                    lstChat.SelectionStart = lstChat.TextLength;
+                    lstChat.ScrollToCaret();
+                });
             }
             finally
             {
-                BeginInvoke(() => lstChat.Items.Add("Disconnected from server"));
+                BeginInvoke(() =>
+                {
+                    lstChat.AppendText("Disconnected from server" + Environment.NewLine);
+                    lstChat.SelectionStart = lstChat.TextLength;
+                    lstChat.ScrollToCaret();
+                });
                 CleanupConnection();
             }
         }
@@ -195,8 +215,9 @@ namespace Client
             {
                 await _writer.WriteLineAsync(payload);
                 // local echo
-                lstChat.Items.Add($"{DateTime.Now:HH:mm} {name}: {text}");
-                lstChat.TopIndex = Math.Max(0, lstChat.Items.Count - 1);
+                lstChat.AppendText($"{DateTime.Now:HH:mm} {name}: {text}" + Environment.NewLine);
+                lstChat.SelectionStart = lstChat.TextLength;
+                lstChat.ScrollToCaret();
                 txtMessage.Clear();
             }
             catch (Exception ex)

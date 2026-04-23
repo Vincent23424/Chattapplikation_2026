@@ -23,7 +23,6 @@ namespace Client
         private TextBox txtServer = null!;
         private TextBox txtPort = null!;
         private TextBox txtName = null!;
-        private TextBox txtToken = null!;
         private TextBox txtMessage = null!;
         private Button btnConnect = null!;
         private Button btnSend = null!;
@@ -49,8 +48,6 @@ namespace Client
             txtPort = new TextBox { Width = 60, Text = "5000", Margin = new Padding(6, 6, 0, 0) };
             var lblName = new Label { Text = "Name:", AutoSize = true, TextAlign = ContentAlignment.MiddleLeft, Margin = new Padding(6, 8, 0, 0) };
             txtName = new TextBox { Width = 140, Text = Environment.UserName, Margin = new Padding(6, 6, 0, 0) };
-            var lblToken = new Label { Text = "Token:", AutoSize = true, TextAlign = ContentAlignment.MiddleLeft, Margin = new Padding(6, 8, 0, 0) };
-            txtToken = new TextBox { Width = 180, Text = string.Empty, Margin = new Padding(6, 6, 0, 0) };
             btnConnect = new Button { Width = 140, Height = 36, Text = "Connect", Margin = new Padding(12, 8, 0, 0) };
             btnConnect.Click += BtnConnect_Click;
 
@@ -60,8 +57,6 @@ namespace Client
             topFlow.Controls.Add(txtPort);
             topFlow.Controls.Add(lblName);
             topFlow.Controls.Add(txtName);
-            topFlow.Controls.Add(lblToken);
-            topFlow.Controls.Add(txtToken);
             topFlow.Controls.Add(btnConnect);
 
             lstChat = new TextBox { Dock = DockStyle.Fill, Margin = new Padding(0, 6, 0, 0), Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, WordWrap = true };

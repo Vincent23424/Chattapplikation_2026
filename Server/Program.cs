@@ -14,6 +14,12 @@ public class Program
     private static readonly List<ClientState> clients = new List<ClientState>();
     private static readonly object clientsLock = new object();
     private static readonly string logPath = Path.Combine(AppContext.BaseDirectory, "server_log.txt");
+    // Allowed auth tokens (comma separated in ENV var AUTH_TOKEN)
+    private static readonly string[] AllowedTokens = (Environment.GetEnvironmentVariable("AUTH_TOKEN") ?? string.Empty)
+        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+        .Select(s => s.Trim())
+        .Where(s => !string.IsNullOrEmpty(s))
+        .ToArray();
 
     public static async Task Main(string[] args)
     {
@@ -68,6 +74,37 @@ public class Program
         {
             using var stream = tcpClient.GetStream();
             using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true);
+
+            // Require authentication as first message (AuthMessage) within 10s if tokens configured
+            if (AllowedTokens.Length > 0)
+            {
+                var authLineTask = reader.ReadLineAsync();
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                var completed = await Task.WhenAny(authLineTask, Task.Delay(Timeout.Infinite, timeoutCts.Token));
+                if (completed != authLineTask)
+                {
+                    // timeout
+                    Console.WriteLine($"Auth timeout from {endpoint}");
+                    return;
+                }
+                var authLine = await authLineTask;
+                if (string.IsNullOrWhiteSpace(authLine))
+                {
+                    Console.WriteLine($"Empty auth from {endpoint}");
+                    return;
+                }
+                var authMsg = MessageBase.FromJson(authLine) as AuthMessage;
+                if (authMsg == null || string.IsNullOrEmpty(authMsg.Token) || !AllowedTokens.Contains(authMsg.Token))
+                {
+                    Console.WriteLine($"Authentication failed from {endpoint}");
+                    // send failure system message then close
+                    try { using var w = new StreamWriter(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true) { AutoFlush = true }; w.WriteLine(new SystemMessage("AuthFailed"){ Sender = "Server" }.ToJson()); } catch { }
+                    return;
+                }
+                // mark client authenticated
+                state.IsAuthenticated = true;
+                try { using var w = new StreamWriter(stream, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true) { AutoFlush = true }; w.WriteLine(new SystemMessage("AuthSuccess"){ Sender = "Server" }.ToJson()); } catch { }
+            }
 
             while (true)
             {
@@ -177,6 +214,7 @@ public class Program
         // mark as required because instances are created with object initializers elsewhere
         public required TcpClient Client { get; init; }
         public required StreamWriter Writer { get; init; }
+        public bool IsAuthenticated { get; set; }
         public object WriteLock { get; } = new object();
     }
 }

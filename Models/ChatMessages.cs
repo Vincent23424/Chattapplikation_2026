@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ChattModels
@@ -6,9 +7,10 @@ namespace ChattModels
     // Message types
     public enum MessageType
     {
-        Text,
+        Private,
         System,
-        Private
+        Auth,
+        Text
     }
 
     // Intermediate message type to demonstrate multi-level inheritance
@@ -132,6 +134,26 @@ namespace ChattModels
         {
             return base.ToString() + $" {Action}";
         }
+    }
+
+    // Authentication message used to provide a token after connection
+    public class AuthMessage : MessageBase
+    {
+        public string Token { get; set; } = string.Empty;
+
+        public AuthMessage()
+        {
+            Type = MessageType.Auth;
+        }
+
+        public AuthMessage(string token)
+        {
+            Token = token ?? string.Empty;
+            Type = MessageType.Auth;
+            Timestamp = DateTime.UtcNow;
+        }
+
+        public override string ToString() => base.ToString() + " [Auth]";
     }
 
     public class PrivateMessage : MessageBase
